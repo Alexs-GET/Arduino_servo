@@ -1,0 +1,65 @@
+import rospy
+import time
+from clever import srv
+from std_srvs.srv import Trigger
+from mavros_msgs.srv import SetMode
+
+rospy.init_node('foo')
+
+navigate = rospy.ServiceProxy('/navigate', srv.Navigate)
+set_mode = rospy.ServiceProxy('/mavros/set_mode', SetMode)
+get_telemetry = rospy.ServiceProxy('/get_telemetry', srv.GetTelemetry)
+
+telemetry = get_telemetry(frame_id = 'aruco_map')
+
+print(telemetry.x, telemetry.y, telemetry.z)
+e = 0.2
+
+print ("VVEDITE JELAYUMUYU VYSOTU")
+b = input()
+navigate(x=0.0,y=0.0, z=b, speed=0.2, frame_id='fcu_horiz', update_frame=False, auto_arm=True)
+time.sleep(1)
+navigate(x=0.0,y=0.0, z=b, speed=0.2, frame_id='aruco_map', update_frame=True, auto_arm=False)
+telemetry = get_telemetry(frame_id = 'aruco_map')
+z = telemetry.z
+while z < b-e:
+	time.sleep(0.01)
+	telemetry = get_telemetry(frame_id = 'aruco_map')
+	z = telemetry.z
+	print("z = " + str("%.3f"%(z)) + "\n")
+
+navigate(x=0.0,y=0.0, z=b+1, speed=0.2, frame_id='aruco_map', update_frame=True, auto_arm=False)
+telemetry = get_telemetry(frame_id = 'aruco_map')
+z = telemetry.z
+while z < (b+1)-e:
+	time.sleep(0.01)
+	telemetry = get_telemetry(frame_id = 'aruco_map')
+	z = telemetry.z
+	print("z = " + str("%.3f"%(z)) + "\n")
+	
+navigate(x=0.0,y=1.5, z=b, speed=0.2, frame_id='aruco_map', update_frame=True, auto_arm=False)
+telemetry = get_telemetry(frame_id = 'aruco_map')
+z = telemetry.z
+y = telemetry.y
+while z > b+e:
+	time.sleep(0.01)
+	telemetry = get_telemetry(frame_id = 'aruco_map')
+	z = telemetry.z
+	print("z = " + str("%.3f"%(z)) + "\n")
+	while y < 1.5-e:
+		time.sleep(0.01)
+		telemetry = get_telemetry(frame_id = 'aruco_map')
+		y = telemetry.y
+		print("y = " + str("%.3f"%(y)) + "\n")
+	
+navigate(x=0.0,y=0.0, z=b, speed=0.2, frame_id='aruco_map', update_frame=True, auto_arm=False)
+telemetry = get_telemetry(frame_id = 'aruco_map')
+y = telemetry.y
+while y > 0+e:
+	time.sleep(0.01)
+	telemetry = get_telemetry(frame_id = 'aruco_map')
+	y = telemetry.y
+	print("y = " + str("%.3f"%(y)) + "\n")
+	
+raw_input('Press enter to LAND: ')
+set_mode(base_mode=0, custom_mode='AUTO.LAND')
