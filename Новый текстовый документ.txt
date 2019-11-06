@@ -1,0 +1,21 @@
+#include <Servo.h>
+
+Servo servo;
+int led = 6;
+  
+void setup() {
+  servo.attach(5);
+  
+ }
+ void loop() {
+  int pix = analogRead(5);
+  pix = map(pix,0,1023,0,90);
+  servo.write(pix);
+  delay(1);
+
+  led = analogRead(5);
+  led = map(led,0,1023,0,255);
+  led = constrain(led,0,255);
+  analogWrite(6,led);
+
+ }
